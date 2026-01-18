@@ -1,0 +1,11 @@
+opencv-python
+mediapipe
+numpy
+pandas
+scipy
+playsound
+imutils
+torch
+torchvision
+torchaudio
+scikit-learn
