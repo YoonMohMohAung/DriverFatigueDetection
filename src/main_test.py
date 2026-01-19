@@ -9,7 +9,7 @@ from utils import compute_ear, compute_mar, compute_head_nod
 # ======================
 # Config
 # ======================
-MODEL_PATH = "models/fatigue_cnn_lstm.pth"
+MODEL_PATH = "models/fatigue_lstm.pth"
 SEQUENCE_LENGTH = 30
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 

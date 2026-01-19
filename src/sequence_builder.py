@@ -1,43 +1,68 @@
+import os
 import numpy as np
 import pandas as pd
 
-WINDOW_SIZE = 30   # frames (~3 sec)
-STRIDE = 15
+FEATURE_DIR = "data/features"
+OUTPUT_DIR = "data/sequences"
 
-EAR_TH = 0.25
-MAR_TH = 0.6
+SEQUENCE_LENGTH = 30   # frames per sequence (≈1 sec at 30fps)
+STRIDE = 5             # overlap between sequences
 
-def label_sequence(seq):
-    ear_mean = seq[:, 0].mean()
-    mar_max = seq[:, 1].max()
-    nods = seq[:, 2].max()
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    if ear_mean < EAR_TH:
-        return 1   # DROWSY
-    elif mar_max > MAR_TH or nods > 0:
-        return 2   # FATIGUE
+def get_label_from_filename(filename):
+    filename = filename.lower()
+
+    if filename.startswith("alert"):
+        return 0
+    elif filename.startswith("drowsy"):
+        return 1
+    elif filename.startswith("yawning"):
+        return 2
     else:
-        return 0   # ALERT
+        raise ValueError(f"Unknown label in filename: {filename}")
 
-def build_sequences(csv_path):
+def build_sequences_from_csv(csv_path, label):
     df = pd.read_csv(csv_path)
-    data = df[["ear", "mar", "nod"]].values
 
+    features = df[["ear", "mar", "nod"]].values
+    sequences = []
+    labels = []
+
+    for start in range(0, len(features) - SEQUENCE_LENGTH + 1, STRIDE):
+        end = start + SEQUENCE_LENGTH
+        seq = features[start:end]
+
+        sequences.append(seq)
+        labels.append(label)
+
+    return sequences, labels
+
+def main():
     X, y = [], []
 
-    for i in range(0, len(data) - WINDOW_SIZE, STRIDE):
-        seq = data[i:i+WINDOW_SIZE]
-        label = label_sequence(seq)
+    for file in os.listdir(FEATURE_DIR):
+        if not file.endswith(".csv"):
+            continue
 
-        X.append(seq)
-        y.append(label)
+        label = get_label_from_filename(file)
+        csv_path = os.path.join(FEATURE_DIR, file)
 
-    return np.array(X), np.array(y)
+        seqs, labels = build_sequences_from_csv(csv_path, label)
+        X.extend(seqs)
+        y.extend(labels)
 
+        print(f"[OK] {file}: {len(seqs)} sequences")
 
-X, y = build_sequences("data/features/features.csv")
+    X = np.array(X, dtype=np.float32)
+    y = np.array(y, dtype=np.int64)
 
-np.save("data/sequences/X.npy", X)
-np.save("data/sequences/y.npy", y)
+    np.save(os.path.join(OUTPUT_DIR, "X.npy"), X)
+    np.save(os.path.join(OUTPUT_DIR, "y.npy"), y)
 
-print("Saved sequences:", X.shape, y.shape)
+    print("\n=== DATASET SUMMARY ===")
+    print("X shape:", X.shape)
+    print("y shape:", y.shape)
+
+if __name__ == "__main__":
+    main()

@@ -8,10 +8,10 @@ from eye_closure import get_ear
 from yawning_detector import mouth_aspect_ratio
 from head_nodding import HeadNodDetector
 
-VIDEO_PATH = "data/raw_videos/subject01.mp4"
-OUTPUT_CSV = "data/features/features.csv"
+RAW_VIDEO_DIR = "data/raw_videos"
+OUTPUT_DIR = "data/features"
 
-os.makedirs("data/features", exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def extract_features(video_path, output_csv):
     cap = cv2.VideoCapture(video_path)
@@ -42,7 +42,27 @@ def extract_features(video_path, output_csv):
                 ])
 
     cap.release()
-    print("Feature extraction complete.")
+    print(f"[OK] Features extracted: {output_csv}")
+
+def process_all_videos():
+    for label in os.listdir(RAW_VIDEO_DIR):
+        label_dir = os.path.join(RAW_VIDEO_DIR, label)
+
+        if not os.path.isdir(label_dir):
+            continue
+
+        for video_file in os.listdir(label_dir):
+            if not video_file.endswith(".mp4"):
+                continue
+
+            video_path = os.path.join(label_dir, video_file)
+
+            output_csv = os.path.join(
+                OUTPUT_DIR,
+                f"{label}_{os.path.splitext(video_file)[0]}.csv"
+            )
+
+            extract_features(video_path, output_csv)
 
 if __name__ == "__main__":
-    extract_features(VIDEO_PATH, OUTPUT_CSV)
+    process_all_videos()

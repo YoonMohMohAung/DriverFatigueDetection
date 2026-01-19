@@ -10,7 +10,7 @@ from model import CNN_LSTM
 # ======================
 # Config
 # ======================
-MODEL_PATH = "models/fatigue_cnn_lstm.pth"
+MODEL_PATH = "models/fatigue_lstm.pth"
 BATCH_SIZE = 32
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 

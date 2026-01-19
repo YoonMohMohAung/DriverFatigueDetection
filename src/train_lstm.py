@@ -75,5 +75,5 @@ for epoch in range(EPOCHS):
     print(f"Epoch {epoch+1}/{EPOCHS} | Loss: {train_loss:.3f} | Val Acc: {acc:.2f}")
 
 # Save model
-torch.save(model.state_dict(), "models/fatigue_cnn_lstm.pth")
+torch.save(model.state_dict(), "models/fatigue_lstm.pth")
 print("Model saved.")
